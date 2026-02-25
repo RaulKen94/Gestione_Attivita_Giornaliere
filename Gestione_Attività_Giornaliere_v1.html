@@ -10,12 +10,9 @@
     <!-- Per un file .png (opzionale, per browser moderni) -->
     <link rel="icon" href="logo.png" type="image/png">
     <!-- Fine: Codice per la Favicon -->
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for animations and scrollbar hiding */
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(10px); }
             10% { opacity: 1; transform: translateY(0); }
@@ -28,576 +25,262 @@
         .font-inter {
             font-family: 'Inter', sans-serif;
         }
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .scrollbar-hide {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 font-inter text-gray-800 flex flex-col items-center">
-    <!-- Sezione 1: Intestazione -->
     <h1 class="text-4xl font-bold text-indigo-700 mb-6 text-center">Gestore Attività Giornaliere</h1>
-    <p class="text-lg text-gray-600 mb-8 text-center max-w-2xl">
-        Incolla qui le tue attività lavorative nel formato specificato, quindi clicca "Elabora". Seleziona un giorno per visualizzare e copiare le attività.
-    </p>
-
-    <!-- Sezione 2: Sezione di Input -->
+    
+    <!-- Sezione Input -->
     <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 mb-8 border border-indigo-200">
         <label for="activity-input" class="block text-xl font-semibold text-indigo-600 mb-3">
             Incolla le tue attività qui:
         </label>
         <textarea
             id="activity-input"
-            class="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-y text-sm"
-            placeholder="Esempio:&#10;Lunedì 22/07&#10;2h [CLIENTE1] CAS-12345-6789 Titolo Attività 1&#10;1h [RANDSTAD] Titolo con 2627490R&#10;1h [FERIE] Giornata di riposo&#10;2h [REPLY] Risposta a email urgenti&#10;&#10;Martedì 23/07&#10;4h [CLIENTE2] CAS-98765-4321 Titolo Attività 2"
-        ></textarea>
-        <button id="process-button" class="mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 block mx-auto">
-            Elabora
+            class="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
+            placeholder="Esempio:&#10;Lunedì 22/07&#10;2h [CLIENTE1] CAS-12345-6789 Titolo..."></textarea>
+        <button id="process-button" class="mt-4 px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition block mx-auto">
+            Elabora Attività
         </button>
     </div>
 
-    <!-- Sezione 3: Selettore Giorno e Visualizzazione Output -->
+    <!-- Calendario e Preview Testuale -->
     <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 mb-8 border border-indigo-200">
-        <div class="flex flex-col items-start mb-6 w-full">
-            <label class="block text-xl font-semibold text-indigo-600 mb-3">
-                Seleziona un giorno:
-            </label>
-
-            <!-- Sezione 3.1: Calendario Interattivo -->
-            <div id="calendar-container" class="w-full bg-white rounded-lg p-4 shadow-sm mb-4 border border-gray-200">
-                <div class="flex justify-between items-center mb-3">
-                    <button id="prev-month-button" class="p-2 rounded-full hover:bg-gray-100 text-gray-700">
-                        &lt;
-                    </button>
-                    <h4 id="calendar-month-year" class="text-lg font-semibold text-indigo-800"></h4>
-                    <button id="next-month-button" class="p-2 rounded-full hover:bg-gray-100 text-gray-700">
-                        &gt;
-                    </button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium text-gray-600 mb-2">
-                    <div>Lun</div>
-                    <div>Mar</div>
-                    <div>Mer</div>
-                    <div>Gio</div>
-                    <div>Ven</div>
-                    <div>Sab</div>
-                    <div>Dom</div>
-                </div>
-                <div id="calendar-days" class="grid grid-cols-7 gap-1">
-                    <!-- Calendar days will be rendered here by JS -->
-                </div>
+        <div id="calendar-container" class="w-full mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <button id="prev-month-button" class="p-2 rounded-full hover:bg-gray-100 font-bold">&lt;</button>
+                <h4 id="calendar-month-year" class="text-xl font-bold text-indigo-800 uppercase tracking-wide"></h4>
+                <button id="next-month-button" class="p-2 rounded-full hover:bg-gray-100 font-bold">&gt;</button>
             </div>
-
-            <p id="no-activity-message" class="text-red-500 text-center text-sm mb-2 w-full hidden">
-                Nessuna attività valida trovata. Assicurati che il formato sia corretto e clicca "Elabora".
-            </p>
+            <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-gray-500 mb-2 uppercase">
+                <div>Lun</div><div>Mar</div><div>Mer</div><div>Gio</div><div>Ven</div><div>Sab</div><div>Dom</div>
+            </div>
+            <div id="calendar-days" class="grid grid-cols-7 gap-2"></div>
         </div>
 
-        <!-- Sezione 3.2: Area di Visualizzazione Output e Copia -->
-        <div class="relative bg-gray-50 p-4 rounded-lg border border-gray-200 min-h-[120px] flex flex-col justify-between">
-            <pre id="displayed-activities-output" class="whitespace-pre-wrap font-mono text-sm text-gray-800 p-2"></pre>
-            <button id="copy-button" class="mt-4 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 self-end">
-                Copia
-            </button>
-            <div id="copy-message" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white text-sm px-4 py-2 rounded-lg shadow-lg hidden">
-                Copiato!
+        <div class="relative bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <!-- Etichetta con font piccolo come richiesto -->
+            <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase">Preview Testuale (Giorno Selezionato)</h3>
+            <pre id="displayed-activities-output" class="whitespace-pre-wrap font-mono text-sm text-gray-700"></pre>
+            <div class="flex justify-end mt-4">
+                <button id="copy-button" class="px-4 py-2 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition">
+                    Copia Tutto
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Sezione 4: Output Formattato per Copia -->
-    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 mt-8 border border-indigo-200">
-        <h2 id="section4-title" class="text-2xl font-bold text-indigo-700 mb-4 text-center">Output Formattato per Copia</h2>
-        <div id="section4-output-container" class="space-y-2">
-            <!-- Formatted lines will be rendered here by JS -->
-            <p class="text-gray-500 text-sm text-center">Seleziona un giorno per visualizzare le attività nel formato per la sezione 4.</p>
+    <!-- Sezione Dettaglio Interattiva -->
+    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 mt-4 border border-indigo-200">
+        <h2 id="section4-title" class="text-2xl font-bold text-indigo-700 mb-6 text-center">Dettaglio Attività</h2>
+        <div id="section4-output-container" class="space-y-4">
+            <p class="text-gray-400 text-center py-10 italic">Seleziona un giorno dal calendario per gestire le singole righe.</p>
         </div>
     </div>
 
     <script>
-        // Global state variables, explicitly defined on window object for robust global access
-        window.inputText = '';
-        window.parsedActivities = {}; // Stores activities parsed from input
-        window.selectedDate = ''; // Currently selected date (DD/MM)
-        window.currentCalendarDisplayDate = new Date(); // Date object to control calendar view (month/year)
-        window.showCopyMessage = false; // Flag to control copy message visibility
-        window.lastCopiedRow = null; // Stores a reference to the last copied row element
+        window.parsedActivities = {}; 
+        window.selectedDate = ''; 
+        window.currentCalendarDisplayDate = new Date();
+        window.lastCopiedIndex = null; 
 
-        // Array of Italian month names
-        const italianMonths = [
-            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
-        ];
+        const italianMonths = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
-        // --- DOM Elements References ---
-        const activityInput = document.getElementById('activity-input');
-        const processButton = document.getElementById('process-button');
-        const calendarMonthYear = document.getElementById('calendar-month-year');
-        const prevMonthButton = document.getElementById('prev-month-button');
-        const nextMonthButton = document.getElementById('next-month-button');
-        const calendarDaysContainer = document.getElementById('calendar-days');
-        const displayedActivitiesOutput = document.getElementById('displayed-activities-output');
-        const copyButton = document.getElementById('copy-button'); // Copy all button for section 3.2
-        const copyMessage = document.getElementById('copy-message');
-        const noActivityMessage = document.getElementById('no-activity-message');
-        const section4OutputContainer = document.getElementById('section4-output-container'); // New container for Section 4
-        const section4Title = document.getElementById('section4-title'); // Reference to the Section 4 title
-
-        // --- Helper Functions ---
-
-        /**
-         * Parses the input text to extract daily activities.
-         * @param {string} text The raw input text to parse.
-         * @returns {object} An object where keys are dates (DD/MM) and values are arrays of activity objects.
-         */
         function parseInputText(text) {
             const activities = {};
-            const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             let currentDate = '';
 
-            lines.forEach((line, index) => {
-                const dayMatch = line.match(/^(Luned[iì]|Marted[iì]|Mercoled[iì]|Gioved[iì]|Venerd[iì]|Sabat[oò]|Domenic[aà]|LUNEDI|MARTEDI|MERCOLEDI|GIOVEDI|VENERDI|SABATO|DOMENICA)\s+(\d{2}\/\d{2})$/i);
-
+            lines.forEach((line) => {
+                const dayMatch = line.match(/^(?:Luned[iì]|Marted[iì]|Mercoled[iì]|Gioved[iì]|Venerd[iì]|Sabat[oò]|Domenic[aà])\s+(\d{2}\/\d{2})/i);
                 if (dayMatch) {
-                    currentDate = dayMatch[2]; // Extracts "DD/MM"
-                    if (!activities[currentDate]) {
-                        activities[currentDate] = [];
-                    }
+                    currentDate = dayMatch[1];
+                    if (!activities[currentDate]) activities[currentDate] = [];
                 } else if (currentDate) {
-                    // Main regex: Capture hours, client, and the entire remainder of the line.
-                    // Group 1: hours
-                    // Group 2: client
-                    // Group 3: originalContentForTitle (will contain potential ticket and title)
                     const activityMatch = line.match(/^(\d+(?:\.\d+)?h)\s+\[([^\]]+)\]\s*(.*)$/);
-
                     if (activityMatch) {
-                        const hours = activityMatch[1];
                         const client = activityMatch[2];
-                        let originalContentForTitle = activityMatch[3] || ''; // This is the full string after client bracket
+                        const title = activityMatch[3] || '';
+                        const casMatch = title.match(/(CAS-\d{5}-[A-Z0-9]{4})/);
+                        let ticket = casMatch ? casMatch[1] : '';
 
-                        let ticket = ''; // This will hold the extracted ticket
-                        
-                        // Trim originalContentForTitle immediately to handle leading spaces before CAS- or other content
-                        originalContentForTitle = originalContentForTitle.trim();
-
-
-                        // 1. Attempt to extract CAS- ticket anywhere in originalContentForTitle
-                        // Corrected regex to allow alphanumeric characters for the last 4 digits and search anywhere in string
-                        const casTicketRegex = /(CAS-\d{5}-[A-Z0-9]{4})/;
-                        const casMatch = originalContentForTitle.match(casTicketRegex);
-
-                        if (casMatch) {
-                            ticket = casMatch[1]; // The CAS ticket
-                        } else {
-                            // 2. If no CAS ticket, check for RANDSTAD specific ticket at the end of the line
-                            if (client.toUpperCase() === 'RANDSTAD') {
-                                // Look for RANDSTAD ticket at the end of the current 'originalContentForTitle'
-                                // Updated regex to optionally include square brackets around the ticket
-                                const randstadTicketMatch = originalContentForTitle.match(/\[?(\d+R)\]?$/);
-                                if (randstadTicketMatch) {
-                                    ticket = randstadTicketMatch[1]; // The RANDSTAD ticket is in group 1
-                                }
-                            }
+                        if (!ticket && client.toUpperCase() === 'RANDSTAD') {
+                            const rMatch = title.match(/\[?(\d+R)\]?$/);
+                            if (rMatch) ticket = rMatch[1];
                         }
-                        
-                        // The 'title' field will always be the original content (after initial trim)
-                        // No further modification to 'originalContentForTitle' for the 'title' property.
-                        activities[currentDate].push({ hours, client, ticket, title: originalContentForTitle });
-                    } else {
-                        // Activity line did not match expected format. Skipping.
+
+                        activities[currentDate].push({
+                            hours: activityMatch[1],
+                            client: client,
+                            ticket: ticket,
+                            title: title,
+                            isManaged: false,
+                            originalIndex: activities[currentDate].length + 1
+                        });
                     }
-                } else {
-                    // Not a day header and no current date set. Skipping line.
                 }
             });
             return activities;
         }
 
-        /**
-         * Calculates the total hours for a given date.
-         * @param {string} date The date string (DD/MM).
-         * @returns {number} The sum of hours for that date.
-         */
-        function calculateDailyTotalHours(date) {
-            let total = 0;
-            if (window.parsedActivities[date]) {
-                window.parsedActivities[date].forEach(activity => {
-                    const hoursValue = parseFloat(activity.hours.replace('h', ''));
-                    if (!isNaN(hoursValue)) {
-                        total += hoursValue;
-                    }
-                });
-            }
-            return total;
+        function calculateTotalHours(date) {
+            if (!window.parsedActivities[date]) return 0;
+            return window.parsedActivities[date].reduce((acc, curr) => acc + parseFloat(curr.hours.replace('h', '')), 0);
         }
 
-        /**
-         * Copies text to the clipboard and shows a temporary message.
-         * @param {string} textToCopy The text to copy.
-         */
-        function copyTextToClipboard(textToCopy) {
+        function copyToClipboard(text, idx = null) {
             const textarea = document.createElement('textarea');
-            textarea.value = textToCopy;
+            textarea.value = text;
             document.body.appendChild(textarea);
             textarea.select();
-            try {
-                document.execCommand('copy');
-                // Show a temporary copy message
-                const tempCopyMessage = document.createElement('div');
-                tempCopyMessage.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white text-sm px-4 py-2 rounded-lg shadow-lg animate-fade-in-out';
-                tempCopyMessage.textContent = 'Copiato!';
-                document.body.appendChild(tempCopyMessage);
-                setTimeout(() => tempCopyMessage.remove(), 2000);
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                // Using a custom message box instead of alert()
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                        <p class="text-lg text-gray-800 mb-4">Impossibile copiare il testo. Si prega di provare manualmente.</p>
-                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md" onclick="this.closest('.fixed').remove()">OK</button>
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            if(idx !== null) {
+                window.lastCopiedIndex = idx;
+                updateSection4();
+            }
+
+            const msg = document.createElement('div');
+            msg.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-2 rounded-full shadow-2xl z-50 animate-fade-in-out font-bold';
+            msg.textContent = 'Copiato!';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        function renderCalendar() {
+            const year = window.currentCalendarDisplayDate.getFullYear();
+            const month = window.currentCalendarDisplayDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
+
+            document.getElementById('calendar-month-year').textContent = `${italianMonths[month]} ${year}`;
+            
+            let html = '';
+            for (let i = 0; i < startOffset; i++) html += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${String(d).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}`;
+                const hasData = window.parsedActivities[dateStr];
+                
+                let colorClass = 'bg-white text-gray-300 border-gray-100 cursor-not-allowed';
+                if (hasData) {
+                    const total = calculateTotalHours(dateStr);
+                    colorClass = (total === 8) ? 'bg-green-500 text-white shadow-md' : 'bg-red-500 text-white shadow-md';
+                }
+
+                const selected = window.selectedDate === dateStr ? 'ring-4 ring-indigo-600 ring-offset-2 scale-110 z-10' : '';
+                
+                html += `
+                    <button onclick="selectDate('${dateStr}')" 
+                        class="h-12 w-full rounded-xl flex items-center justify-center text-sm font-bold border transition-all duration-200 ${colorClass} ${selected}" 
+                        ${!hasData ? 'disabled' : ''}>
+                        ${d}
+                    </button>`;
+            }
+            document.getElementById('calendar-days').innerHTML = html;
+        }
+
+        function selectDate(date) {
+            window.selectedDate = date;
+            window.lastCopiedIndex = null;
+            updateUI();
+        }
+
+        function updateSection4() {
+            const container = document.getElementById('section4-output-container');
+            container.innerHTML = '';
+            
+            if (!window.selectedDate || !window.parsedActivities[window.selectedDate]) return;
+
+            const list = [...window.parsedActivities[window.selectedDate]].sort((a, b) => {
+                if (a.isManaged === b.isManaged) return a.originalIndex - b.originalIndex;
+                return a.isManaged ? 1 : -1;
+            });
+
+            list.forEach((act) => {
+                const lineText = `${act.client.toUpperCase()};${act.hours.replace('h','')};${act.ticket};`;
+                
+                const row = document.createElement('div');
+                row.className = `flex items-center p-6 rounded-2xl border transition-all duration-300 transform ${act.isManaged ? 'bg-gray-50 border-gray-200 opacity-60' : (window.lastCopiedIndex === act.originalIndex ? 'bg-blue-50 border-blue-400 shadow-md scale-[1.01]' : 'bg-white border-gray-200 shadow-sm hover:border-indigo-300 hover:shadow-md')}`;
+
+                row.innerHTML = `
+                    <div class="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-base font-black mr-5 shadow-sm ${act.isManaged ? 'bg-gray-300 text-white' : 'bg-indigo-600 text-white'}">
+                        ${act.originalIndex}
+                    </div>
+                    <div class="flex-grow font-mono text-lg font-semibold truncate pr-6 ${act.isManaged ? 'line-through text-gray-400' : 'text-gray-800'}">
+                        ${lineText}
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="copyToClipboard('${lineText}', ${act.originalIndex})" class="px-5 py-3.5 bg-green-600 text-white text-sm font-bold rounded-2xl hover:bg-green-700 hover:shadow-lg transform transition active:scale-95 hover:-translate-y-0.5">Copia</button>
+                        ${act.ticket ? `<button onclick="copyToClipboard('${act.ticket}', ${act.originalIndex})" class="px-5 py-3.5 bg-blue-600 text-white text-sm font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg transform transition active:scale-95 hover:-translate-y-0.5">Ticket</button>` : ''}
+                        <button onclick="toggleManaged(${act.originalIndex})" class="px-5 py-3.5 ${act.isManaged ? 'bg-gray-400' : 'bg-orange-500'} text-white text-sm font-bold rounded-2xl hover:opacity-90 hover:shadow-lg transform transition active:scale-95 hover:-translate-y-0.5">
+                            ${act.isManaged ? 'Annulla' : 'Gestito'}
+                        </button>
                     </div>
                 `;
-                document.body.appendChild(messageBox);
-            } finally {
-                document.body.removeChild(textarea);
-            }
-        }
-
-
-        // --- UI Rendering Functions ---
-
-        /**
-         * Renders the days in the calendar grid.
-         */
-        function renderCalendarDays() {
-            const year = window.currentCalendarDisplayDate.getFullYear();
-            const month = window.currentCalendarDisplayDate.getMonth(); // 0-indexed month
-
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            let daysHtml = '';
-            // Fill leading empty days (adjusting for Monday as first day of week)
-            const startDayOffset = (firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1); // Monday is 0, Sunday is 6
-
-            for (let i = 0; i < startDayOffset; i++) {
-                daysHtml += `<div class="w-8 h-8 flex items-center justify-center text-gray-300"></div>`;
-            }
-
-            // Fill days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateString = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}`;
-                const hasActivity = window.parsedActivities[dateString];
-                const totalHours = hasActivity ? calculateDailyTotalHours(dateString) : 0;
-                const isSelected = window.selectedDate === dateString;
-
-                const buttonColorClass = hasActivity
-                    ? (totalHours === 8 ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600')
-                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700';
-                
-                // Changed border-2 to border-4 for increased thickness
-                const selectedClass = isSelected ? 'border-4 border-indigo-700' : ''; 
-                const disabledAttr = hasActivity ? '' : 'disabled';
-                const cursorClass = hasActivity ? 'cursor-pointer' : 'cursor-not-allowed';
-                const textColorClass = hasActivity ? 'text-white' : '';
-
-                daysHtml += `
-                    <button
-                        data-date="${dateString}"
-                        class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                        ${buttonColorClass}
-                        ${selectedClass}
-                        ${textColorClass}
-                        transition duration-200 ease-in-out
-                        ${cursorClass}"
-                        ${disabledAttr}
-                    >
-                        ${day}
-                    </button>
-                `;
-            }
-            calendarDaysContainer.innerHTML = daysHtml;
-
-            // Attach event listeners to newly rendered day buttons
-            calendarDaysContainer.querySelectorAll('button').forEach(button => {
-                if (!button.disabled) { // Only attach if not disabled
-                    button.addEventListener('click', () => handleDateChipClick(button.dataset.date));
-                }
+                container.appendChild(row);
             });
         }
 
-        /**
-         * Updates the displayed activities based on selectedDate, grouped by client (case-insensitive).
-         */
-        function updateDisplayedActivities() {
-            if (window.selectedDate && window.parsedActivities[window.selectedDate]) {
-                const activitiesForSelectedDate = window.parsedActivities[window.selectedDate];
-                const groupedByClient = {};
+        window.toggleManaged = (idx) => {
+            const act = window.parsedActivities[window.selectedDate].find(a => a.originalIndex === idx);
+            if (act) act.isManaged = !act.isManaged;
+            updateSection4();
+        };
 
-                activitiesForSelectedDate.forEach(activity => {
-                    const clientKey = activity.client.toUpperCase(); // Use uppercase for the grouping key
-                    if (!groupedByClient[clientKey]) {
-                        groupedByClient[clientKey] = [];
-                    }
-                    groupedByClient[clientKey].push(activity);
-                });
-
-                let formattedOutput = [];
-                // Sort client keys alphabetically
-                Object.keys(groupedByClient).sort().forEach(clientNameKey => {
-                    formattedOutput.push(`--- ${clientNameKey} ---`); // Client heading emphasized, always uppercase
-                    groupedByClient[clientNameKey].forEach(activity => {
-                        // Keep original client casing in the activity line
-                        let activityString = `${activity.hours} [${activity.client}]`; 
-                        if (activity.ticket) {
-                            activityString += ` ${activity.ticket}`;
-                        }
-                        activityString += ` ${activity.title}`;
-                        formattedOutput.push(activityString);
-                    });
-                    formattedOutput.push(''); // Add an empty line between clients for better readability
-                });
-
-                displayedActivitiesOutput.textContent = formattedOutput.join('\n').trim(); // Join and trim last empty line
-            } else {
-                displayedActivitiesOutput.textContent = 'Nessuna attività per il giorno selezionato o nessun giorno selezionato.';
-            }
-        }
-
-        /**
-         * Genera un array di stringhe formattate per la Sezione 4.
-         * Ogni stringa è nel formato "CLIENTE;ORE;TICKET;".
-         * @param {Array<Object>} activities L'array di oggetti attività per il giorno selezionato.
-         * @returns {Array<string>} Un array di stringhe formattate.
-         */
-        function getFormattedSection4Lines(activities) {
-            const formattedLines = [];
-            activities.forEach(activity => {
-                const clientFormatted = activity.client.toUpperCase();
-                const hoursFormatted = parseFloat(activity.hours.replace('h', ''));
-                const ticketFormatted = activity.ticket ? activity.ticket : ''; 
-                formattedLines.push(`${clientFormatted};${hoursFormatted};${ticketFormatted};`);
-            });
-            return formattedLines;
-        }
-
-
-        /**
-         * Updates the output in Section 4, formatted for individual copying.
-         */
-        function updateSection4Output() {
-            section4OutputContainer.innerHTML = ''; // Clear previous content
-            window.lastCopiedRow = null; // Reset last copied row when updating output
-
-            if (window.selectedDate && window.parsedActivities[window.selectedDate]) {
-                const activitiesForSelectedDate = window.parsedActivities[window.selectedDate];
-                
-                // Group activities by client and sort clients alphabetically
-                const groupedByClient = {};
-                activitiesForSelectedDate.forEach(activity => {
-                    const clientKey = activity.client.toUpperCase();
-                    if (!groupedByClient[clientKey]) {
-                        groupedByClient[clientKey] = [];
-                    }
-                    groupedByClient[clientKey].push(activity);
-                });
-
-                const sortedClientKeys = Object.keys(groupedByClient).sort();
-
-                let lineCounter = 1; // Initialize line counter
-
-                sortedClientKeys.forEach(clientNameKey => {
-                    groupedByClient[clientNameKey].forEach(activity => {
-                        const outputLine = `${activity.client.toUpperCase()};${parseFloat(activity.hours.replace('h', ''))};${activity.ticket ? activity.ticket : ''};`;
-
-                        // Create the HTML structure for each copyable slot
-                        const slotDiv = document.createElement('div');
-                        // Use flexbox to align number and text, with a gap
-                        slotDiv.className = 'flex items-center bg-white p-3 rounded-lg shadow-sm mb-2 border border-gray-200 transition-colors duration-200'; // Added transition for smooth color change
-                        
-                        // Create the numbered area
-                        const numberSpan = document.createElement('span');
-                        numberSpan.className = 'flex-shrink-0 w-8 h-8 bg-indigo-500 text-white font-semibold rounded-full flex items-center justify-center text-xs mr-3';
-                        numberSpan.textContent = lineCounter;
-
-                        // Create the text content area
-                        const textSpan = document.createElement('span');
-                        textSpan.className = 'font-mono text-sm text-gray-800 flex-grow break-all';
-                        textSpan.textContent = outputLine;
-
-                        // Create the copy button
-                        const copyBtn = document.createElement('button');
-                        copyBtn.className = 'copy-section4-button ml-4 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200';
-                        copyBtn.textContent = 'Copia';
-                        
-                        // Add event listener for copying and highlighting for "Copia"
-                        copyBtn.addEventListener('click', () => {
-                            copyTextToClipboard(outputLine);
-                            
-                            // Remove highlight from previous row if it exists
-                            if (window.lastCopiedRow && window.lastCopiedRow !== slotDiv) {
-                                window.lastCopiedRow.classList.remove('bg-blue-100');
-                            }
-                            // Add highlight to current row
-                            slotDiv.classList.add('bg-blue-100');
-                            // Update lastCopiedRow
-                            window.lastCopiedRow = slotDiv;
-                        });
-
-                        // Create the "Nr. Ticket" button
-                        const ticketCopyBtn = document.createElement('button');
-                        ticketCopyBtn.className = 'copy-ticket-button ml-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200';
-                        ticketCopyBtn.textContent = 'Nr. Ticket';
-
-                        // Add event listener for copying and highlighting for "Nr. Ticket"
-                        ticketCopyBtn.addEventListener('click', () => {
-                            copyTextToClipboard(activity.ticket); // Copy only the ticket
-                            
-                            // Remove highlight from previous row if it exists
-                            if (window.lastCopiedRow && window.lastCopiedRow !== slotDiv) {
-                                window.lastCopiedRow.classList.remove('bg-blue-100');
-                            }
-                            // Add highlight to current row
-                            slotDiv.classList.add('bg-blue-100');
-                            // Update lastCopiedRow
-                            window.lastCopiedRow = slotDiv;
-                        });
-                        
-                        slotDiv.appendChild(numberSpan);
-                        slotDiv.appendChild(textSpan);
-                        slotDiv.appendChild(copyBtn);
-                        // Only add the "Nr. Ticket" button if a ticket exists for this activity
-                        if (activity.ticket) {
-                            slotDiv.appendChild(ticketCopyBtn);
-                        }
-                        section4OutputContainer.appendChild(slotDiv);
-                        
-                        lineCounter++; // Increment for the next line
-                    });
-                });
-            } else {
-                section4OutputContainer.innerHTML = '<p class="text-gray-500 text-sm text-center">Seleziona un giorno per visualizzare le attività nel formato per la sezione 4.</p>';
-            }
-        }
-
-
-        /**
-         * Shows/hides the "No activity found" message.
-         */
-        function updateNoActivityMessage() {
-            if (Object.keys(window.parsedActivities).length === 0 && window.inputText.length > 0) {
-                noActivityMessage.classList.remove('hidden');
-            } else {
-                noActivityMessage.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Main UI update function, called after any state change.
-         */
         function updateUI() {
-            calendarMonthYear.textContent = `${italianMonths[window.currentCalendarDisplayDate.getMonth()]} ${window.currentCalendarDisplayDate.getFullYear()}`;
-            renderCalendarDays();
-            updateDisplayedActivities();
-            updateSection4Output(); // Call the new function for Section 4
-            updateNoActivityMessage();
+            renderCalendar();
+            updateSection4();
+            
+            const out = document.getElementById('displayed-activities-output');
+            const title = document.getElementById('section4-title');
 
-            // Update Section 4 title based on selectedDate
-            if (section4Title) {
-                if (window.selectedDate) {
-                    section4Title.textContent = `Output - ${window.selectedDate}`;
-                } else {
-                    section4Title.textContent = `Output Formattato per Copia`; // Default title if no date selected
-                }
-            }
+            if (window.selectedDate && window.parsedActivities[window.selectedDate]) {
+                const data = window.parsedActivities[window.selectedDate];
+                const grouped = {};
+                data.forEach(a => {
+                    const ck = a.client.toUpperCase();
+                    if (!grouped[ck]) grouped[ck] = [];
+                    grouped[ck].push(a);
+                });
 
-            // Handle copy message visibility (animation handled by CSS)
-            if (copyMessage.classList.contains('animate-fade-in-out')) {
-                 copyMessage.classList.remove('animate-fade-in-out');
-                 void copyMessage.offsetWidth; // Trigger reflow
-            }
-            if (window.showCopyMessage) { // Access via window object
-                copyMessage.classList.remove('hidden');
-                copyMessage.classList.add('animate-fade-in-out');
+                let formatted = [];
+                Object.keys(grouped).sort().forEach(ck => {
+                    formatted.push(`--- ${ck} ---`);
+                    grouped[ck].forEach(a => formatted.push(`${a.hours} [${a.client}]${a.ticket ? ' ' + a.ticket : ''} ${a.title}`));
+                    formatted.push('');
+                });
+                out.textContent = formatted.join('\n').trim();
+                title.textContent = `Dettaglio - ${window.selectedDate}`;
             } else {
-                copyMessage.classList.add('hidden');
+                out.textContent = 'Elabora il testo e seleziona un giorno...';
+                title.textContent = 'Dettaglio Attività';
             }
-            copyButton.disabled = !displayedActivitiesOutput.textContent || displayedActivitiesOutput.textContent === 'Nessuna attività per il giorno selezionato o nessun giorno selezionato.';
         }
 
-        // --- Event Handlers ---
+        document.getElementById('process-button').onclick = () => {
+            window.parsedActivities = parseInputText(document.getElementById('activity-input').value);
+            const dates = Object.keys(window.parsedActivities);
+            if (dates.length > 0) selectDate(dates[0]);
+            else updateUI();
+        };
 
-        function handleProcessText() {
-            const currentYear = new Date().getFullYear();
-            window.inputText = activityInput.value; // Update global inputText
-            window.parsedActivities = parseInputText(window.inputText);
-
-            const sortedDates = Object.keys(window.parsedActivities).sort((a, b) => {
-                const [dayA, monthA] = a.split('/').map(Number);
-                const [dayB, monthB] = b.split('/').map(Number);
-                const dateA = new Date(currentYear, monthA - 1, dayA);
-                const dateB = new Date(currentYear, monthB - 1, dayB);
-                return dateA - dateB;
-            });
-
-            const firstDate = sortedDates[0];
-            if (firstDate) {
-                window.selectedDate = firstDate;
-                const [day, month] = firstDate.split('/').map(Number);
-                window.currentCalendarDisplayDate = new Date(currentYear, month - 1, day);
-            } else {
-                window.selectedDate = '';
-                window.currentCalendarDisplayDate = new Date(); // Reset calendar to current month if no activities
-            }
-            updateUI();
-        }
-
-        function handleDateChipClick(date) {
-            window.selectedDate = date;
-            updateUI();
-        }
-
-        function handleInputChange() {
-            window.inputText = activityInput.value; // Update global inputText
-            // No need to re-process on every input, only on "Elabora" click
-            // But we might want to hide the "no activity" message if user starts typing again
-            updateNoActivityMessage(); // Update message visibility
-        }
-
-        function copyAllActivitiesToClipboard() { // Renamed for clarity
-            copyTextToClipboard(displayedActivitiesOutput.textContent);
-        }
-
-        function goToPreviousMonth() {
+        document.getElementById('prev-month-button').onclick = () => {
             window.currentCalendarDisplayDate.setMonth(window.currentCalendarDisplayDate.getMonth() - 1);
             updateUI();
-        }
+        };
 
-        function goToNextMonth() {
+        document.getElementById('next-month-button').onclick = () => {
             window.currentCalendarDisplayDate.setMonth(window.currentCalendarDisplayDate.getMonth() + 1);
             updateUI();
-        }
+        };
 
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Attach event listeners
-            activityInput.addEventListener('input', handleInputChange);
-            processButton.addEventListener('click', handleProcessText);
-            prevMonthButton.addEventListener('click', goToPreviousMonth);
-            nextMonthButton.addEventListener('click', goToNextMonth);
-            copyButton.addEventListener('click', copyAllActivitiesToClipboard); // Updated event listener
+        document.getElementById('copy-button').onclick = () => {
+            copyToClipboard(document.getElementById('displayed-activities-output').textContent);
+        };
 
-            // Initial UI render
-            updateUI();
-        });
+        updateUI();
     </script>
 </body>
 </html>
