@@ -25,6 +25,14 @@
         .font-inter {
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Nascondi la freccia di default del tag details */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 font-inter text-gray-800 flex flex-col items-center">
@@ -46,11 +54,13 @@
 
     <!-- Calendario e Preview Testuale -->
     <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 mb-8 border border-indigo-200">
+        
+        <!-- Calendario (Sempre Visibile) -->
         <div id="calendar-container" class="w-full mb-6">
             <div class="flex justify-between items-center mb-4">
-                <button id="prev-month-button" class="p-2 rounded-full hover:bg-gray-100 font-bold">&lt;</button>
+                <button id="prev-month-button" class="p-2 rounded-full hover:bg-gray-100 font-bold text-gray-600">&lt;</button>
                 <h4 id="calendar-month-year" class="text-xl font-bold text-indigo-800 uppercase tracking-wide"></h4>
-                <button id="next-month-button" class="p-2 rounded-full hover:bg-gray-100 font-bold">&gt;</button>
+                <button id="next-month-button" class="p-2 rounded-full hover:bg-gray-100 font-bold text-gray-600">&gt;</button>
             </div>
             <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-gray-500 mb-2 uppercase">
                 <div>Lun</div><div>Mar</div><div>Mer</div><div>Gio</div><div>Ven</div><div>Sab</div><div>Dom</div>
@@ -58,20 +68,39 @@
             <div id="calendar-days" class="grid grid-cols-7 gap-2"></div>
         </div>
 
-        <div class="relative bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <!-- Etichetta con font piccolo come richiesto -->
-            <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase">Preview Testuale (Giorno Selezionato)</h3>
-            <pre id="displayed-activities-output" class="whitespace-pre-wrap font-mono text-sm text-gray-700"></pre>
-            <div class="flex justify-end mt-4">
-                <button id="copy-button" class="px-4 py-2 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition">
-                    Copia Tutto
-                </button>
+        <!-- Barra di Avanzamento -->
+        <div class="mb-4">
+            <div class="flex justify-between text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                <span>Avanzamento Gestione Giornaliera</span>
+                <span id="progress-text" class="text-indigo-600">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
         </div>
+
+        <!-- Preview Testuale (Collassabile) -->
+        <details class="group bg-gray-50 rounded-lg border border-gray-200 transition-all duration-300">
+            <summary class="p-4 text-xs font-bold text-gray-500 uppercase cursor-pointer flex items-center justify-between outline-none hover:bg-gray-100 rounded-lg transition">
+                <span>Preview Testuale (Giorno Selezionato)</span>
+                <svg class="w-4 h-4 text-gray-500 transform group-open:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </summary>
+            
+            <div class="p-4 pt-0 border-t border-gray-200 mt-2">
+                <pre id="displayed-activities-output" class="whitespace-pre-wrap font-mono text-sm text-gray-700 mt-4"></pre>
+                <div class="flex justify-end mt-4">
+                    <button id="copy-button" class="px-4 py-2 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition">
+                        Copia Tutto
+                    </button>
+                </div>
+            </div>
+        </details>
     </div>
 
     <!-- Sezione Dettaglio Interattiva -->
-    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 mt-4 border border-indigo-200">
+    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 border border-indigo-200 mb-10">
         <h2 id="section4-title" class="text-2xl font-bold text-indigo-700 mb-6 text-center">Dettaglio Attività</h2>
         <div id="section4-output-container" class="space-y-4">
             <p class="text-gray-400 text-center py-10 italic">Seleziona un giorno dal calendario per gestire le singole righe.</p>
@@ -128,6 +157,14 @@
             return window.parsedActivities[date].reduce((acc, curr) => acc + parseFloat(curr.hours.replace('h', '')), 0);
         }
 
+        // Funzione per calcolare la percentuale di completamento
+        function getCompletionPercentage(date) {
+            const activities = window.parsedActivities[date];
+            if (!activities || activities.length === 0) return 0;
+            const managedCount = activities.filter(act => act.isManaged).length;
+            return Math.round((managedCount / activities.length) * 100);
+        }
+
         function copyToClipboard(text, idx = null) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
@@ -164,19 +201,37 @@
                 const hasData = window.parsedActivities[dateStr];
                 
                 let colorClass = 'bg-white text-gray-300 border-gray-100 cursor-not-allowed';
+                let badgeHtml = '';
+
                 if (hasData) {
                     const total = calculateTotalHours(dateStr);
+                    const percentage = getCompletionPercentage(dateStr);
                     colorClass = (total === 8) ? 'bg-green-500 text-white shadow-md' : 'bg-red-500 text-white shadow-md';
+                    
+                    // Colori del badge in base alla percentuale
+                    let badgeColorClass = 'bg-white text-gray-700';
+                    if(percentage === 100) badgeColorClass = 'bg-green-100 text-green-800 border-green-300';
+                    else if(percentage > 0) badgeColorClass = 'bg-yellow-100 text-yellow-800 border-yellow-300';
+                    
+                    badgeHtml = `
+                        <div class="absolute -top-2 -right-2 ${badgeColorClass} border shadow-sm text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none z-20">
+                            ${percentage}%
+                        </div>
+                    `;
                 }
 
                 const selected = window.selectedDate === dateStr ? 'ring-4 ring-indigo-600 ring-offset-2 scale-110 z-10' : '';
                 
+                // Aggiunto "relative" per posizionare il badge all'angolo
                 html += `
-                    <button onclick="selectDate('${dateStr}')" 
-                        class="h-12 w-full rounded-xl flex items-center justify-center text-sm font-bold border transition-all duration-200 ${colorClass} ${selected}" 
-                        ${!hasData ? 'disabled' : ''}>
-                        ${d}
-                    </button>`;
+                    <div class="relative">
+                        <button onclick="selectDate('${dateStr}')" 
+                            class="h-12 w-full rounded-xl flex items-center justify-center text-sm font-bold border transition-all duration-200 ${colorClass} ${selected}" 
+                            ${!hasData ? 'disabled' : ''}>
+                            ${d}
+                        </button>
+                        ${badgeHtml}
+                    </div>`;
             }
             document.getElementById('calendar-days').innerHTML = html;
         }
@@ -227,11 +282,38 @@
             const act = window.parsedActivities[window.selectedDate].find(a => a.originalIndex === idx);
             if (act) act.isManaged = !act.isManaged;
             updateSection4();
+            updateProgressAndCalendar(); // Aggiorna barra e badge calendario
         };
 
+        // Funzione per aggiornare la barra di avanzamento e ri-renderizzare i badge del calendario
+        function updateProgressAndCalendar() {
+            if (window.selectedDate && window.parsedActivities[window.selectedDate]) {
+                const percentage = getCompletionPercentage(window.selectedDate);
+                
+                const bar = document.getElementById('progress-bar');
+                const text = document.getElementById('progress-text');
+                
+                bar.style.width = `${percentage}%`;
+                text.textContent = `${percentage}%`;
+
+                // Cambia colore della barra al 100%
+                if(percentage === 100) {
+                    bar.classList.replace('bg-indigo-600', 'bg-green-500');
+                    text.classList.replace('text-indigo-600', 'text-green-600');
+                } else {
+                    bar.classList.replace('bg-green-500', 'bg-indigo-600');
+                    text.classList.replace('text-green-600', 'text-indigo-600');
+                }
+            } else {
+                document.getElementById('progress-bar').style.width = '0%';
+                document.getElementById('progress-text').textContent = '0%';
+            }
+            renderCalendar(); // Aggiorna i badge nel calendario
+        }
+
         function updateUI() {
-            renderCalendar();
             updateSection4();
+            updateProgressAndCalendar();
             
             const out = document.getElementById('displayed-activities-output');
             const title = document.getElementById('section4-title');
