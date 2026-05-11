@@ -46,7 +46,7 @@
         <textarea
             id="activity-input"
             class="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
-            placeholder="Esempio:&#10;Lunedì 22/07&#10;2h [CLIENTE1] CAS-12345-6789 Titolo..."></textarea>
+            placeholder="Esempio:&#10;Lunedì 04/05&#10;4.5h [Bouvard] CAS-47436-X3J5: Esportazione... | PRS-114"></textarea>
         <button id="process-button" class="mt-4 px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition block mx-auto">
             Elabora Attività
         </button>
@@ -129,20 +129,26 @@
                     const activityMatch = line.match(/^(\d+(?:\.\d+)?h)\s+\[([^\]]+)\]\s*(.*)$/);
                     if (activityMatch) {
                         const client = activityMatch[2];
-                        const title = activityMatch[3] || '';
-                        const casMatch = title.match(/(CAS-\d{5}-[A-Z0-9]{4})/);
-                        let ticket = casMatch ? casMatch[1] : '';
-
-                        if (!ticket && client.toUpperCase() === 'RANDSTAD') {
-                            const rMatch = title.match(/\[?(\d+R)\]?$/);
-                            if (rMatch) ticket = rMatch[1];
+                        const fullTitle = activityMatch[3] || '';
+                        
+                        // NUOVA LOGICA: Individuazione Ticket tramite Pipe "|"
+                        let ticket = '';
+                        if (fullTitle.includes('|')) {
+                            const parts = fullTitle.split('|');
+                            ticket = parts[parts.length - 1].trim();
+                        } else {
+                            // Fallback per Randstad come nel codice originale se non c'è pipe
+                            if (client.toUpperCase() === 'RANDSTAD') {
+                                const rMatch = fullTitle.match(/\[?(\d+R)\]?$/);
+                                if (rMatch) ticket = rMatch[1];
+                            }
                         }
 
                         activities[currentDate].push({
                             hours: activityMatch[1],
                             client: client,
                             ticket: ticket,
-                            title: title,
+                            title: fullTitle,
                             isManaged: false,
                             originalIndex: activities[currentDate].length + 1
                         });
