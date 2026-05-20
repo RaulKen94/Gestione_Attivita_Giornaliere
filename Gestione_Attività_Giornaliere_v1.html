@@ -134,8 +134,23 @@
                         // NUOVA LOGICA: Individuazione Ticket tramite Pipe "|"
                         let ticket = '';
                         if (fullTitle.includes('|')) {
-                            const parts = fullTitle.split('|');
-                            ticket = parts[parts.length - 1].trim();
+                            const parts = fullTitle.split('|').map(p => p.trim());
+                            
+                            // Cerca la parte che non contiene spazi (il ticket, es. "PRS-290" o "PRS-114")
+                            const potentialTicket = parts.find(p => !p.includes(' ') && p.length > 0);
+                            
+                            if (potentialTicket) {
+                                ticket = potentialTicket;
+                            } else {
+                                // Fallback: se non trova una parte senza spazi, cerca esplicitamente il pattern PRS-
+                                const prsMatch = fullTitle.match(/(PRS-\d+)/i);
+                                if (prsMatch) {
+                                    ticket = prsMatch[1].toUpperCase();
+                                } else {
+                                    // Ultima ratio: comportamento precedente (prende l'ultima parte)
+                                    ticket = parts[parts.length - 1];
+                                }
+                            }
                         } else {
                             // Fallback per Randstad come nel codice originale se non c'è pipe
                             if (client.toUpperCase() === 'RANDSTAD') {
